@@ -1,1 +1,68 @@
+Import Library dan Baca JSON
+import pandas as pd
+import json
+import re
+import string
+import nltk
+#nltk.download('punkt')
+from nltk.tokenize import word_tokenize
+from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
+# Import data JSON
+json_file_path = '1524416400000.kompas.e81873f891.json'
 
+
+# Read JSON data
+with open(json_file_path, "r", encoding='utf-8') as json_file:
+    data = json.load(json_file)
+
+# Lihat tipe data & data keys
+print(type(data))
+print(data.keys())
+
+
+Lakukan Preprocessing Data (belum stemming)
+#Ambil content & seragamkan jadi lower case
+str_data = data['content'].lower()
+
+#Hapus angka
+hasil = re.sub(r"\d+", "", str_data)
+
+#Hilangkan tanda baca
+hasil_tb = hasil.translate(str.maketrans("","",string.punctuation))
+
+#Hapus karakter kosong
+hasil_kk = hasil_tb.strip()
+
+#Tokenisasi tiap Kata
+##
+factory = StopWordRemoverFactory()
+stopword = factory.create_stop_word_remover()
+
+stop = stopword.remove(hasil_kk)
+tokens = nltk.tokenize.word_tokenize(stop)
+tokens
+print(type(tokens))
+
+unStemmed = nltk.FreqDist(tokens)
+print(unStemmed.most_common())
+Lakukan Stemming
+#Import Sastrawi
+from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
+
+factory = StemmerFactory()
+stemmer = factory.create_stemmer()
+ 
+kalimat = hasil_kk
+
+hasil = stemmer.stem(kalimat)
+
+hasil
+
+stop = stopword.remove(hasil)
+tokens = nltk.tokenize.word_tokenize(stop)
+tokens
+print(type(tokens))
+
+stemmed = nltk.FreqDist(tokens)
+
+print(stemmed.most_common())
